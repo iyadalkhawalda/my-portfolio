@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iyad Alkhawalda — Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--navy:#0a1628;--blue-light:#3a6ff7;--accent:#4fc3f7;--gold:#f0c040;--white:#fff;--muted:#8da0c0;--card-bg:rgba(255,255,255,0.04);--card-border:rgba(255,255,255,0.08);--glow:0 0 24px rgba(79,195,247,0.18);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;}
+    canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.5;}
+    .cursor-glow{width:320px;height:320px;background:radial-gradient(circle,rgba(79,195,247,.08) 0%,transparent 70%);border-radius:50%;position:fixed;pointer-events:none;transform:translate(-50%,-50%);z-index:0;}
+ 
+    /* NAV — logo left, links center, lang right */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 2.5rem;background:rgba(10,22,40,.75);backdrop-filter:blur(16px);border-bottom:1px solid var(--card-border);}
+    .nav-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--white);justify-self:start;}
+    .nav-logo span{color:var(--accent);}
+    .nav-links{display:flex;gap:2rem;list-style:none;justify-self:center;}
+    .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s;}
+    .nav-links a:hover{color:var(--accent);}
+    .nav-right{justify-self:end;display:flex;align-items:center;}
+ 
+    /* LANG */
+    .lang-switcher{position:relative;}
+    .lang-btn{display:flex;align-items:center;gap:6px;background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.2);color:var(--accent);padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+    .lang-btn:hover{background:rgba(79,195,247,.15);}
+    .lang-arrow{font-size:10px;transition:transform .2s;display:inline-block;}
+    .lang-btn.open .lang-arrow{transform:rotate(180deg);}
+    .lang-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;background:#0f2044;border:1px solid rgba(79,195,247,.2);border-radius:10px;overflow:hidden;min-width:170px;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.5);max-height:300px;overflow-y:auto;}
+    .lang-dropdown.open{display:block;}
+    .lang-option{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;color:var(--muted);cursor:pointer;border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;transition:all .15s;}
+    .lang-option:hover{background:rgba(79,195,247,.08);color:var(--accent);}
+    .lang-option.active{color:var(--accent);font-weight:500;}
+ 
+        /* RTL NAV flip — المحاذاة الصحيحة للعربي */
+    [dir="rtl"] nav {
+        grid-template-columns: 1fr auto 1fr;
+        direction: rtl;
+    }
+    [dir="rtl"] .nav-logo {
+        justify-self: start; /* يضمن بقاء اللوجو في مكانه جهة اليمين بالعربي */
+        text-align: right;
+    }
+    [dir="rtl"] .nav-right {
+        justify-self: end; /* يضمن بقاء زر اللغة في أقصى اليسار بالعربي */
+    }
+    [dir="rtl"] .nav-links {
+        display: flex;
+        flex-direction: row; /* يضمن بقاء ترتيب الروابط صحيح */
+        gap: 2rem;
+    }
+    [dir="rtl"] .lang-dropdown {
+        right: auto;
+        left: 0;
+    }
+    [dir="rtl"] .lang-option {
+        flex-direction: row; /* ليبقى العلم بجانب النص بشكل سليم */
+        text-align: right;
+    }
+    [dir="rtl"] .section-label {
+        flex-direction: row;
+    }
+    [dir="rtl"] .section-label::after {
+        background: linear-gradient(270deg, rgba(79,195,247,.3), transparent);
+    }
+    [dir="rtl"] .edu-item, [dir="rtl"] .cert-card, [dir="rtl"] .contact-item {
+        flex-direction: row;
+    }
+    [dir="rtl"] .hero {
+        direction: rtl;
+    }
+    [dir="rtl"] .modal {
+        direction: rtl;
+        text-align: right;
+    }
+    [dir="rtl"] .modal-close {
+        right: auto;
+        left: 1rem;
+    }
+    [dir="rtl"] .form-group label {
+        text-align: right;
+    }
+
+ 
+    /* HERO */
+    .hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 5rem;}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(79,195,247,.1);border:1px solid rgba(79,195,247,.25);color:var(--accent);padding:6px 16px;border-radius:30px;font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;margin-bottom:2rem;animation:fadeUp .6s ease both;}
+    .hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0;}
+    .avatar-wrap{position:relative;width:130px;height:130px;margin:0 auto 2rem;animation:fadeUp .6s .1s ease both;}
+    .avatar-ring{position:absolute;inset:-6px;border-radius:50%;border:2px solid transparent;background:linear-gradient(135deg,var(--accent),var(--blue-light),var(--gold)) border-box;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:destination-out;mask-composite:exclude;animation:spin 8s linear infinite;}
+    .avatar{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#1a4fd6,#0a1628);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:38px;font-weight:700;color:var(--accent);border:3px solid rgba(79,195,247,.3);position:relative;z-index:1;}
+    .hero h1{font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,58px);font-weight:700;line-height:1.1;margin-bottom:.8rem;animation:fadeUp .6s .2s ease both;cursor:pointer;user-select:none;}
+    .hero h1 span{color:var(--accent);}
+    .hero-subtitle{font-size:16px;color:var(--muted);margin-bottom:.4rem;animation:fadeUp .6s .3s ease both;font-weight:300;}
+    .hero-location{font-size:13px;color:rgba(141,160,192,.7);margin-bottom:2.5rem;animation:fadeUp .6s .35s ease both;}
+    .hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeUp .6s .45s ease both;}
+    .btn-primary{background:var(--blue-light);color:#fff;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;transition:all .25s;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    .btn-primary:hover{background:var(--accent);color:var(--navy);box-shadow:0 0 20px rgba(79,195,247,.4);transform:translateY(-2px);}
+    .btn-outline{background:transparent;color:var(--muted);padding:12px 28px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;border:1px solid var(--card-border);transition:all .25s;}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,195,247,.06);transform:translateY(-2px);}
+    .scroll-hint{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:3.5rem;animation:fadeUp .6s .8s ease both;}
+    .scroll-hint span{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+    .scroll-arrow{width:18px;height:28px;border:1.5px solid var(--muted);border-radius:10px;position:relative;}
+    .scroll-arrow::after{content:'';width:4px;height:4px;background:var(--accent);border-radius:50%;position:absolute;top:5px;left:50%;transform:translateX(-50%);animation:scrollDot 1.5s infinite;}
+ 
+    /* SECTIONS */
+    .main{position:relative;z-index:1;}
+    .container{max-width:800px;margin:0 auto;padding:0 1.5rem 6rem;}
+    .section{margin-top:2rem;opacity:0;transform:translateY(30px);transition:opacity .6s,transform .6s;}
+    .section.visible{opacity:1;transform:translateY(0);}
+    .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:2rem 2.2rem;transition:border-color .3s,box-shadow .3s;position:relative;overflow:hidden;}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(79,195,247,.3),transparent);opacity:0;transition:opacity .3s;}
+    .card:hover{border-color:rgba(79,195,247,.25);box-shadow:var(--glow);}
+    .card:hover::before{opacity:1;}
+    .section-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:1.4rem;display:flex;align-items:center;gap:10px;}
+    .section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(79,195,247,.3),transparent);}
+    .bio-text{font-size:15px;color:rgba(240,244,255,.75);line-height:1.9;font-weight:300;}
+    .skills-grid{display:flex;flex-wrap:wrap;gap:10px;}
+    .skill-pill{background:rgba(26,79,214,.15);border:1px solid rgba(26,79,214,.3);color:#a8c0ff;padding:7px 18px;border-radius:30px;font-size:13px;font-weight:500;transition:all .25s;cursor:default;}
+    .skill-pill:hover{background:rgba(79,195,247,.15);border-color:rgba(79,195,247,.5);color:var(--accent);box-shadow:0 0 14px rgba(79,195,247,.2);transform:translateY(-2px);}
+    .edu-item{display:flex;gap:1.2rem;align-items:flex-start;}
+    .edu-icon{width:44px;height:44px;border-radius:10px;background:rgba(26,79,214,.2);border:1px solid rgba(26,79,214,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;}
+    .edu-info h3{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;margin-bottom:4px;}
+    .edu-info p{font-size:13px;color:var(--muted);}
+    .year-tag{display:inline-block;margin-top:8px;background:rgba(79,195,247,.1);border:1px solid rgba(79,195,247,.2);color:var(--accent);padding:3px 12px;border-radius:20px;font-size:11px;font-weight:500;}
+    .cert-card{display:flex;align-items:center;gap:1rem;background:rgba(240,192,64,.06);border:1px solid rgba(240,192,64,.2);border-radius:12px;padding:1.2rem 1.5rem;transition:all .25s;}
+    .cert-card:hover{border-color:rgba(240,192,64,.45);background:rgba(240,192,64,.1);box-shadow:0 0 18px rgba(240,192,64,.12);transform:translateY(-2px);}
+    .cert-icon{font-size:28px;flex-shrink:0;}
+    .cert-info h4{font-size:15px;font-weight:500;color:var(--gold);}
+    .cert-info p{font-size:12px;color:var(--muted);margin-top:2px;}
+    .contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+    .contact-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:10px;text-decoration:none;transition:all .25s;color:var(--muted);cursor:pointer;}
+    .contact-item:hover{border-color:rgba(79,195,247,.35);color:var(--accent);background:rgba(79,195,247,.05);transform:translateY(-2px);box-shadow:0 0 14px rgba(79,195,247,.12);}
+    .contact-icon{width:34px;height:34px;border-radius:8px;background:rgba(26,79,214,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .contact-icon svg{width:16px;height:16px;fill:currentColor;}
+    .contact-item span{font-size:13px;font-weight:500;}
+    .footer{position:relative;z-index:1;text-align:center;padding:2.5rem 1rem;border-top:1px solid var(--card-border);color:var(--muted);font-size:12px;}
+    .footer strong{color:var(--accent);}
+ 
+    /* MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#0f2044;border:1px solid rgba(79,195,247,.2);border-radius:16px;padding:2rem;width:min(480px,90vw);position:relative;animation:fadeUp .3s ease;}
+    .modal h2{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:.3rem;}
+    .modal-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem;}
+    .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .2s;}
+    .modal-close:hover{color:var(--accent);}
+    .form-group{margin-bottom:1rem;}
+    .form-group label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+    .form-group input,.form-group textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--card-border);border-radius:8px;padding:10px 14px;color:var(--white);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;}
+    .form-group input:focus,.form-group textarea:focus{border-color:rgba(79,195,247,.5);box-shadow:0 0 0 3px rgba(79,195,247,.08);}
+    .form-group textarea{resize:vertical;min-height:110px;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .btn-send{width:100%;background:var(--blue-light);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .25s;margin-top:.5rem;}
+    .btn-send:hover{background:var(--accent);color:var(--navy);}
+    .btn-send:disabled{opacity:.6;cursor:not-allowed;}
+    .form-status{margin-top:.8rem;font-size:13px;text-align:center;min-height:20px;}
+    .form-status.success{color:#5dcaa5;}
+    .form-status.error{color:#f09595;}
+ 
+    /* CHICK */
+    .chick{position:fixed;font-size:64px;z-index:9999;pointer-events:none;animation:chickPop .9s ease forwards;}
+    @keyframes chickPop{0%{transform:scale(0) translateY(0);opacity:1;}40%{transform:scale(1.4) translateY(-50px);opacity:1;}100%{transform:scale(.4) translateY(-100px);opacity:0;}}
+ 
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+    @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+    @keyframes scrollDot{0%{top:5px;opacity:1;}100%{top:16px;opacity:0;}}
+ 
+    @media(max-width:700px){
+      nav{grid-template-columns:auto 1fr auto;padding:0 1rem;}
+      .nav-links{display:none;}
+      .hero{padding:7rem 1.2rem 5rem;}
+      .card{padding:1.4rem 1.2rem;}
+      .form-row{grid-template-columns:1fr;}
+    }
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    /* إضافة توهج أزرق يتناسب مع متغير --blue-light الموجود عندك */
+    filter: drop-shadow(0 0 12px var(--blue-light));
+    /* خلفية متدرجة تعطي عمق للصورة */
+    background: radial-gradient(circle, #243b55 0%, var(--navy) 100%);
+}
+
+
+  </style>
+</head>
+<body>
+ 
+<div class="cursor-glow" id="cursorGlow"></div>
+<canvas id="stars"></canvas>
+ 
+<nav>
+  <div class="nav-logo">Iyad <span>.</span></div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about"     id="nl0">About</a></li>
+    <li><a href="#skills"    id="nl1">Skills</a></li>
+    <li><a href="#education" id="nl2">Education</a></li>
+    <li><a href="#contact"   id="nl3">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-switcher" id="langSwitcher">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">
+        <span id="currentFlag">🌐</span>
+        <span id="currentLangName">EN</span>
+        <span class="lang-arrow">▼</span>
+      </button>
+      <div class="lang-dropdown" id="langDropdown">
+        <button class="lang-option active" onclick="setLang('en')"><span>🇬🇧</span> English</button>
+        <button class="lang-option" onclick="setLang('ar')"><span>🇰🇼</span> العربية</button>
+        <button class="lang-option" onclick="setLang('tr')"><span>🇹🇷</span> Türkçe</button>
+        <button class="lang-option" onclick="setLang('fr')"><span>🇫🇷</span> Français</button>
+        <button class="lang-option" onclick="setLang('es')"><span>🇪🇸</span> Español</button>
+        <button class="lang-option" onclick="setLang('de')"><span>🇩🇪</span> Deutsch</button>
+        <button class="lang-option" onclick="setLang('zh')"><span>🇨🇳</span> 中文</button>
+        <button class="lang-option" onclick="setLang('ja')"><span>🇯🇵</span> 日本語</button>
+        <button class="lang-option" onclick="setLang('ko')"><span>🇰🇷</span> 한국어</button>
+        <button class="lang-option" onclick="setLang('ru')"><span>🇷🇺</span> Русский</button>
+        <button class="lang-option" onclick="setLang('pt')"><span>🇧🇷</span> Português</button>
+        <button class="lang-option" onclick="setLang('it')"><span>🇮🇹</span> Italiano</button>
+      </div>
+    </div>
+  </div>
+</nav>
+ 
+<section class="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span><span id="t-badge">Available for opportunities</span></div>
+  <div class="avatar-wrap"><div class="avatar-ring"></div><div class="avatar"><img src="iyad.png" alt="Iyad" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"></div></div>
+  <h1 id="heroName" onclick="eggClick()">Iyad <span>Alkhawalda</span></h1>
+  <p class="hero-subtitle" id="t-subtitle">IT Student &nbsp;·&nbsp; Arab Open University, Kuwait</p>
+  <p class="hero-location" id="t-location">📍 Hawally Governorate, Kuwait</p>
+  <div class="hero-buttons">
+    <button class="btn-primary" id="t-btn-contact" onclick="openModal()">Get in Touch</button>
+    <a href="https://www.linkedin.com/in/iyad-alkhawalda-755799397" target="_blank" class="btn-outline">LinkedIn</a>
+    <a href="https://www.instagram.com/aaqyz.0.1" target="_blank" class="btn-outline">Instagram</a>
+  </div>
+  <div class="scroll-hint"><div class="scroll-arrow"></div><span id="t-scroll">Scroll</span></div>
+</section>
+ 
+<main class="main"><div class="container">
+ 
+  <div class="section" id="about">
+    <div class="card">
+      <div class="section-label" id="t-about-label">About Me</div>
+      <p class="bio-text" id="t-about-text">I'm an IT student at Arab Open University with a strong passion for technology and computers. I have a wide range of skills in computer applications and MS Office tools, and I'm always eager to learn and grow. Fluent in both <strong style="color:#fff;font-weight:500">Arabic</strong> and <strong style="color:#fff;font-weight:500">English</strong>, I thrive in diverse and collaborative environments.</p>
+    </div>
+  </div>
+ 
+  <div class="section" id="skills">
+    <div class="card">
+      <div class="section-label" id="t-skills-label">Skills</div>
+      <div class="skills-grid" id="skillsGrid">
+        <span class="skill-pill">MS Office Apps</span>
+        <span class="skill-pill">Java</span>
+        <span class="skill-pill">AI Tools</span>
+        <span class="skill-pill">Photo Editing</span>
+        <span class="skill-pill">Computer Troubleshooting</span>
+        <span class="skill-pill">English (Fluent)</span>
+        <span class="skill-pill">Arabic (Native)</span>
+        <span class="skill-pill">Problem Solving</span>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="section" id="education">
+    <div class="card">
+      <div class="section-label" id="t-edu-label">Education</div>
+      <div class="edu-item">
+        <div class="edu-icon">🎓</div>
+        <div class="edu-info">
+          <h3 id="t-edu-degree">Bachelor of Information Technology</h3>
+          <p id="t-edu-school">Arab Open University (AOU) — Kuwait</p>
+          <span class="year-tag" id="t-edu-year">Currently enrolled · Expected 2030</span>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="section">
+    <div class="card">
+      <div class="section-label" id="t-cert-label">Certifications</div>
+      <div class="cert-card">
+        <div class="cert-icon">🏆</div>
+        <div class="cert-info">
+          <h4 id="t-cert-name">C1 Turkish Language Certificate</h4>
+          <p id="t-cert-desc">Advanced level proficiency in Turkish</p>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="section" id="contact">
+    <div class="card">
+      <div class="section-label" id="t-contact-label">Get in Touch</div>
+      <div class="contact-grid">
+        <div class="contact-item" onclick="openModal()">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+          <span id="t-contact-email">Email Me</span>
+        </div>
+        <a href="https://www.linkedin.com/in/iyad-alkhawalda-755799397" target="_blank" class="contact-item">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14m-.5 15.5v-5.3a3.26 3.26 0 00-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 011.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 001.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 00-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg></div>
+          <span>LinkedIn</span>
+        </a>
+        <a href="https://www.instagram.com/aaqyz.0.1" target="_blank" class="contact-item">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 01-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 017.8 2m-.2 2A3.6 3.6 0 004 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 003.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 011.25 1.25A1.25 1.25 0 0117.25 8 1.25 1.25 0 0116 6.75a1.25 1.25 0 011.25-1.25M12 7a5 5 0 015 5 5 5 0 01-5 5 5 5 0 01-5-5 5 5 0 015-5m0 2a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3z"/></svg></div>
+          <span>Instagram</span>
+        </a>
+        <div class="contact-item" style="cursor:default;">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+          <span id="t-contact-loc">Hawally, Kuwait</span>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+</div></main>
+ 
+<footer class="footer" id="t-footer">Designed &amp; built by <strong>Iyad Alkhawalda</strong> &nbsp;·&nbsp; &copy; 2025</footer>
+ 
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contactModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="t-modal-title">Send me a message</h2>
+    <p class="modal-sub" id="t-modal-sub">Fill in your details and I'll get back to you.</p>
+    <div class="form-row">
+      <div class="form-group"><label id="t-label-name">Your Name</label><input type="text" id="senderName" placeholder="John Doe"/></div>
+      <div class="form-group"><label id="t-label-email">Your Email</label><input type="email" id="senderEmail" placeholder="john@email.com"/></div>
+    </div>
+    <div class="form-group"><label id="t-label-subject">Subject</label><input type="text" id="senderSubject" placeholder="What's this about?"/></div>
+    <div class="form-group"><label id="t-label-message">Message</label><textarea id="senderMessage" placeholder="Write your message here..."></textarea></div>
+    <button class="btn-send" id="sendBtn" onclick="sendMessage()"><span id="t-btn-send">Send Message</span></button>
+    <div class="form-status" id="formStatus"></div>
+  </div>
+</div>
+ 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// ════════════════════════════════════════════
+// EMAILJS SETUP — 3 steps to activate:
+// 1. Create free account at https://emailjs.com
+// 2. Add Gmail service → copy Service ID
+// 3. Create template with: {{from_name}} {{from_email}} {{subject}} {{message}}
+//    Set "To" as your Gmail → copy Template ID
+// 4. Copy Public Key from Account > API Keys
+// Then replace the 3 values below:
+const EJ_KEY  = '3GH8mip5B226-jzCf';
+const EJ_SVC  = 'service_iyad';
+const EJ_TPL  = 'template_iyad';
+emailjs.init(EJ_KEY);
+// ════════════════════════════════════════════
+ 
+function openModal(){document.getElementById('contactModal').classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('contactModal').classList.remove('open');document.body.style.overflow='';document.getElementById('formStatus').textContent='';document.getElementById('formStatus').className='form-status';}
+function closeModalOutside(e){if(e.target===document.getElementById('contactModal'))closeModal();}
+ 
+function sendMessage(){
+  const name=document.getElementById('senderName').value.trim();
+  const email=document.getElementById('senderEmail').value.trim();
+  const subject=document.getElementById('senderSubject').value.trim();
+  const message=document.getElementById('senderMessage').value.trim();
+  const status=document.getElementById('formStatus');
+  const btn=document.getElementById('sendBtn');
+  const t=currentT;
+  if(!name||!email||!message){status.textContent=t.err_empty;status.className='form-status error';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status.textContent=t.err_email;status.className='form-status error';return;}
+  btn.disabled=true;
+  document.getElementById('t-btn-send').textContent=t.sending;
+  emailjs.send(EJ_SVC,EJ_TPL,{from_name:name,from_email:email,subject:subject||'Portfolio Contact',message})
+    .then(()=>{
+      status.textContent=t.success;status.className='form-status success';
+      document.getElementById('senderName').value='';document.getElementById('senderEmail').value='';
+      document.getElementById('senderSubject').value='';document.getElementById('senderMessage').value='';
+      btn.disabled=false;document.getElementById('t-btn-send').textContent=t.btn_send;
+      setTimeout(closeModal,2500);
+    }).catch(()=>{
+      status.textContent=t.err_send;status.className='form-status error';
+      btn.disabled=false;document.getElementById('t-btn-send').textContent=t.btn_send;
+    });
+}
+ 
+// ── EASTER EGG ──
+let eggCount=0,eggTimer=null;
+function eggClick(){
+  eggCount++;clearTimeout(eggTimer);
+  eggTimer=setTimeout(()=>{eggCount=0;},1400);
+  if(eggCount>=5){eggCount=0;spawnChick();}
+}
+function spawnChick(){
+  const c=document.createElement('div');c.className='chick';c.textContent='🐣';
+  const r=document.getElementById('heroName').getBoundingClientRect();
+  c.style.left=(r.left+r.width/2-32)+'px';c.style.top=(r.top+window.scrollY-20)+'px';
+  document.body.appendChild(c);
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type='sine';o.frequency.setValueAtTime(900,ac.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1400,ac.currentTime+.08);
+    o.frequency.exponentialRampToValueAtTime(750,ac.currentTime+.2);
+    g.gain.setValueAtTime(.35,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.4);
+    o.start();o.stop(ac.currentTime+.4);
+  }catch(e){}
+  setTimeout(()=>c.remove(),950);
+}
+ 
+// ── TRANSLATIONS ──
+const langs={
+  en:{flag:'🇬🇧',name:'EN',rtl:false,nav:['About','Skills','Education','Contact'],badge:'Available for opportunities',subtitle:'IT Student · Arab Open University, Kuwait',location:'📍 Hawally Governorate, Kuwait',btn_contact:'Get in Touch',scroll:'Scroll',about_label:'About Me',about_text:"I'm an IT student at Arab Open University with a strong passion for technology and computers. I have a wide range of skills in computer applications and MS Office tools. Fluent in both <strong style='color:#fff;font-weight:500'>Arabic</strong> and <strong style='color:#fff;font-weight:500'>English</strong>, I thrive in diverse and collaborative environments.",skills_label:'Skills',skills:['MS Office Apps','Java','AI Tools','Photo Editing','Computer Troubleshooting','English (Fluent)','Arabic (Native)','Problem Solving'],edu_label:'Education',edu_degree:'Bachelor of Information Technology',edu_school:'Arab Open University (AOU) — Kuwait',edu_year:'Currently enrolled · Expected 2030',cert_label:'Certifications',cert_name:'C1 Turkish Language Certificate',cert_desc:'Advanced level proficiency in Turkish',contact_label:'Get in Touch',contact_email:'Email Me',contact_loc:'Hawally, Kuwait',footer:'Designed & built by <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Send me a message',modal_sub:"Fill in your details and I'll get back to you.",label_name:'Your Name',label_email:'Your Email',label_subject:'Subject',label_message:'Message',btn_send:'Send Message',sending:'Sending...',success:"Message sent! I'll reply soon.",err_empty:'Please fill in all required fields.',err_email:'Please enter a valid email.',err_send:'Something went wrong. Try emailing me directly.'},
+  ar:{flag:'🇰🇼',name:'AR',rtl:true,nav:['عني','المهارات','التعليم','تواصل'],badge:'متاح للفرص الوظيفية',subtitle:'طالب تقنية معلومات · جامعة العرب المفتوحة، الكويت',location:'📍 محافظة حولي، الكويت',btn_contact:'تواصل معي',scroll:'تمرير',about_label:'نبذة عني',about_text:"أنا طالب في تخصص تقنية المعلومات بجامعة العرب المفتوحة بالكويت، أمتلك شغفاً حقيقياً بالتكنولوجيا والحاسوب. أجيد استخدام تطبيقات Microsoft Office وأدوات الحاسوب المختلفة، وأسعى دائماً للتعلم والتطور. أتحدث <strong style='color:#fff;font-weight:500'>العربية</strong> لغةً أم و<strong style='color:#fff;font-weight:500'>الإنجليزية</strong> بطلاقة.",skills_label:'المهارات',skills:['تطبيقات Microsoft Office','برمجة Java','أدوات الذكاء الاصطناعي','تحرير الصور','صيانة الحاسوب وحل مشاكله','الإنجليزية (طلاقة)','العربية (لغة أم)','حل المشكلات'],edu_label:'التعليم',edu_degree:'بكالوريوس تقنية المعلومات',edu_school:'جامعة العرب المفتوحة — الكويت',edu_year:'طالب حالياً · التخرج المتوقع عام 2030',cert_label:'الشهادات والدورات',cert_name:'شهادة اللغة التركية — المستوى C1',cert_desc:'إتقان متقدم للغة التركية',contact_label:'تواصل معي',contact_email:'راسلني',contact_loc:'حولي، الكويت',footer:'تصميم وبرمجة <strong>إياد الخوالدة</strong> · © 2025',modal_title:'أرسل لي رسالة',modal_sub:'اكتب بياناتك وسأرد عليك في أقرب وقت.',label_name:'اسمك',label_email:'بريدك الإلكتروني',label_subject:'الموضوع',label_message:'نص الرسالة',btn_send:'إرسال',sending:'جارٍ الإرسال...',success:'تم إرسال رسالتك بنجاح، سأرد عليك قريباً.',err_empty:'يرجى تعبئة جميع الحقول المطلوبة.',err_email:'يرجى إدخال بريد إلكتروني صحيح.',err_send:'حدث خطأ. يمكنك مراسلتي مباشرة على البريد الإلكتروني.'},
+  tr:{flag:'🇹🇷',name:'TR',rtl:false,nav:['Hakkımda','Beceriler','Eğitim','İletişim'],badge:'Fırsatlara açık',subtitle:'BT Öğrencisi · Arap Açık Üniversitesi, Kuveyt',location:'📍 Hawalli, Kuveyt',btn_contact:'İletişime Geç',scroll:'Kaydır',about_label:'Hakkımda',about_text:"Arap Açık Üniversitesi'nde BT okuyorum. MS Office ve bilgisayar uygulamalarında geniş becerilerim var. <strong style='color:#fff;font-weight:500'>Arapça</strong> ve <strong style='color:#fff;font-weight:500'>İngilizce</strong> akıcı konuşuyorum.",skills_label:'Beceriler',skills:['MS Office Uygulamaları','Java','Yapay Zeka Araçları','Fotoğraf Düzenleme','Bilgisayar Destek','İngilizce (Akıcı)','Arapça (Ana Dil)','Problem Çözme'],edu_label:'Eğitim',edu_degree:'Bilgi Teknolojileri Lisansı',edu_school:'Arap Açık Üniversitesi (AOU) — Kuveyt',edu_year:'Kayıtlı · Mezuniyet: 2030',cert_label:'Sertifikalar',cert_name:'C1 Türkçe Dil Sertifikası',cert_desc:'Türkçede ileri düzey',contact_label:'İletişime Geç',contact_email:'E-posta Gönder',contact_loc:'Hawalli, Kuveyt',footer:'Tasarım: <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Mesaj Gönder',modal_sub:'Bilgilerini doldur, geri döneceğim.',label_name:'Adınız',label_email:'E-posta',label_subject:'Konu',label_message:'Mesaj',btn_send:'Gönder',sending:'Gönderiliyor...',success:'Mesaj gönderildi!',err_empty:'Lütfen tüm alanları doldurun.',err_email:'Geçerli e-posta girin.',err_send:'Hata oluştu. Doğrudan e-posta gönderin.'},
+  fr:{flag:'🇫🇷',name:'FR',rtl:false,nav:['À propos','Compétences','Formation','Contact'],badge:'Disponible pour des opportunités',subtitle:"Étudiant en informatique · Université Arabe Ouverte, Koweït",location:'📍 Hawally, Koweït',btn_contact:'Me contacter',scroll:'Défiler',about_label:'À propos',about_text:"Étudiant en informatique passionné par la technologie. Maîtrise de MS Office et diverses applis informatiques. Bilingue <strong style='color:#fff;font-weight:500'>arabe</strong> et <strong style='color:#fff;font-weight:500'>anglais</strong>.",skills_label:'Compétences',skills:['MS Office','Java','Outils IA','Retouche photo','Support informatique','Anglais (courant)','Arabe (natif)','Résolution de problèmes'],edu_label:'Formation',edu_degree:"Licence en Technologies de l'Information",edu_school:'Université Arabe Ouverte (AOU) — Koweït',edu_year:'Inscrit · Diplôme 2030',cert_label:'Certifications',cert_name:'Certificat turc C1',cert_desc:'Maîtrise avancée du turc',contact_label:'Contact',contact_email:'Envoyer un email',contact_loc:'Hawally, Koweït',footer:'Conçu par <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Envoyer un message',modal_sub:'Remplissez vos coordonnées.',label_name:'Votre nom',label_email:'Votre email',label_subject:'Sujet',label_message:'Message',btn_send:'Envoyer',sending:'Envoi...',success:'Message envoyé !',err_empty:'Remplissez tous les champs.',err_email:'Email invalide.',err_send:'Erreur. Envoyez directement un email.'},
+  es:{flag:'🇪🇸',name:'ES',rtl:false,nav:['Sobre mí','Habilidades','Educación','Contacto'],badge:'Disponible para oportunidades',subtitle:'Estudiante de TI · Universidad Árabe Abierta, Kuwait',location:'📍 Hawally, Kuwait',btn_contact:'Contactarme',scroll:'Desplazar',about_label:'Sobre mí',about_text:"Estudiante de TI apasionado por la tecnología. Manejo MS Office y herramientas informáticas. Hablo <strong style='color:#fff;font-weight:500'>árabe</strong> e <strong style='color:#fff;font-weight:500'>inglés</strong> con fluidez.",skills_label:'Habilidades',skills:['MS Office','Java','Herramientas IA','Edición de fotos','Soporte informático','Inglés (fluido)','Árabe (nativo)','Resolución de problemas'],edu_label:'Educación',edu_degree:'Licenciatura en TI',edu_school:'Universidad Árabe Abierta (AOU) — Kuwait',edu_year:'Inscrito · Graduación 2030',cert_label:'Certificaciones',cert_name:'Certificado turco C1',cert_desc:'Dominio avanzado del turco',contact_label:'Contacto',contact_email:'Enviar correo',contact_loc:'Hawally, Kuwait',footer:'Desarrollado por <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Envíame un mensaje',modal_sub:'Completa tus datos.',label_name:'Tu nombre',label_email:'Tu email',label_subject:'Asunto',label_message:'Mensaje',btn_send:'Enviar',sending:'Enviando...',success:'¡Mensaje enviado!',err_empty:'Rellena todos los campos.',err_email:'Email inválido.',err_send:'Error. Escríbeme directamente.'},
+  de:{flag:'🇩🇪',name:'DE',rtl:false,nav:['Über mich','Fähigkeiten','Ausbildung','Kontakt'],badge:'Offen für Möglichkeiten',subtitle:'IT-Student · Arab Open University, Kuwait',location:'📍 Hawally, Kuwait',btn_contact:'Kontakt',scroll:'Scrollen',about_label:'Über mich',about_text:"IT-Student mit Leidenschaft für Technologie. MS Office und Computeranwendungen. Fließend in <strong style='color:#fff;font-weight:500'>Arabisch</strong> und <strong style='color:#fff;font-weight:500'>Englisch</strong>.",skills_label:'Fähigkeiten',skills:['MS Office','Java','KI-Tools','Bildbearbeitung','Computer-Support','Englisch (fließend)','Arabisch (Muttersprache)','Problemlösung'],edu_label:'Ausbildung',edu_degree:'Bachelor Informationstechnologie',edu_school:'Arab Open University (AOU) — Kuwait',edu_year:'Eingeschrieben · Abschluss 2030',cert_label:'Zertifikate',cert_name:'C1 Türkisch-Zertifikat',cert_desc:'Fortgeschrittene Türkischkenntnisse',contact_label:'Kontakt',contact_email:'E-Mail senden',contact_loc:'Hawally, Kuwait',footer:'Entwickelt von <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Nachricht senden',modal_sub:'Formular ausfüllen.',label_name:'Ihr Name',label_email:'Ihre E-Mail',label_subject:'Betreff',label_message:'Nachricht',btn_send:'Senden',sending:'Wird gesendet...',success:'Nachricht gesendet!',err_empty:'Bitte alle Felder ausfüllen.',err_email:'Ungültige E-Mail.',err_send:'Fehler. Direkt per E-Mail schreiben.'},
+  zh:{flag:'🇨🇳',name:'ZH',rtl:false,nav:['关于我','技能','教育','联系'],badge:'开放机会',subtitle:'IT学生 · 阿拉伯开放大学，科威特',location:'📍 科威特哈瓦利省',btn_contact:'联系我',scroll:'滚动',about_label:'关于我',about_text:"IT学生，热爱技术。精通MS Office及计算机应用。通晓<strong style='color:#fff;font-weight:500'>阿拉伯语</strong>与<strong style='color:#fff;font-weight:500'>英语</strong>。",skills_label:'技能',skills:['MS Office','Java','AI工具','图片编辑','电脑维护','英语（流利）','阿拉伯语（母语）','解决问题'],edu_label:'教育',edu_degree:'信息技术学士',edu_school:'阿拉伯开放大学 — 科威特',edu_year:'在读 · 预计2030年毕业',cert_label:'证书',cert_name:'C1土耳其语证书',cert_desc:'土耳其语高级水平',contact_label:'联系方式',contact_email:'发送邮件',contact_loc:'科威特哈瓦利',footer:'由 <strong>Iyad Alkhawalda</strong> 设计 · © 2025',modal_title:'发送消息',modal_sub:'填写您的信息。',label_name:'姓名',label_email:'邮箱',label_subject:'主题',label_message:'留言',btn_send:'发送',sending:'发送中...',success:'消息已发送！',err_empty:'请填写所有必填项。',err_email:'请输入有效邮箱。',err_send:'出错了，请直接发邮件。'},
+  ja:{flag:'🇯🇵',name:'JA',rtl:false,nav:['自己紹介','スキル','学歴','連絡'],badge:'機会を求めています',subtitle:'ITの学生 · アラブ・オープン大学、クウェート',location:'📍 クウェート、ハワリ県',btn_contact:'お問い合わせ',scroll:'スクロール',about_label:'自己紹介',about_text:"ITを学ぶ学生。MS Officeやコンピューターアプリに精通。<strong style='color:#fff;font-weight:500'>アラビア語</strong>と<strong style='color:#fff;font-weight:500'>英語</strong>を流暢に話します。",skills_label:'スキル',skills:['MS Office','Java','AIツール','写真編集','PCサポート','英語（流暢）','アラビア語（母語）','問題解決'],edu_label:'学歴',edu_degree:'情報技術学士号',edu_school:'アラブ・オープン大学 — クウェート',edu_year:'在学中 · 2030年卒業予定',cert_label:'資格',cert_name:'C1トルコ語検定',cert_desc:'トルコ語上級レベル',contact_label:'連絡先',contact_email:'メールを送る',contact_loc:'クウェート、ハワリ',footer:'<strong>Iyad Alkhawalda</strong> 制作 · © 2025',modal_title:'メッセージを送る',modal_sub:'詳細を入力してください。',label_name:'お名前',label_email:'メールアドレス',label_subject:'件名',label_message:'メッセージ',btn_send:'送信',sending:'送信中...',success:'送信完了！',err_empty:'全項目を入力してください。',err_email:'有効なメールを入力。',err_send:'エラー。直接メールしてください。'},
+  ko:{flag:'🇰🇷',name:'KO',rtl:false,nav:['소개','기술','학력','연락처'],badge:'기회를 찾고 있습니다',subtitle:'IT 학생 · 아랍 오픈 대학교, 쿠웨이트',location:'📍 쿠웨이트 하왈리 주',btn_contact:'연락하기',scroll:'스크롤',about_label:'자기소개',about_text:"IT를 공부하는 학생으로 MS Office 등 컴퓨터 응용 프로그램에 능숙합니다. <strong style='color:#fff;font-weight:500'>아랍어</strong>와 <strong style='color:#fff;font-weight:500'>영어</strong>를 유창하게 구사합니다.",skills_label:'기술',skills:['MS Office','Java','AI 도구','사진 편집','컴퓨터 지원','영어 (유창)','아랍어 (모국어)','문제 해결'],edu_label:'학력',edu_degree:'정보기술 학사',edu_school:'아랍 오픈 대학교 (AOU) — 쿠웨이트',edu_year:'재학 중 · 2030년 졸업 예정',cert_label:'자격증',cert_name:'C1 터키어 자격증',cert_desc:'터키어 고급 수준',contact_label:'연락처',contact_email:'이메일 보내기',contact_loc:'쿠웨이트 하왈리',footer:'<strong>Iyad Alkhawalda</strong> 제작 · © 2025',modal_title:'메시지 보내기',modal_sub:'정보를 입력해 주세요.',label_name:'이름',label_email:'이메일',label_subject:'제목',label_message:'메시지',btn_send:'보내기',sending:'전송 중...',success:'전송됨!',err_empty:'모든 항목을 입력하세요.',err_email:'유효한 이메일을 입력하세요.',err_send:'오류. 직접 이메일로 연락해 주세요.'},
+  ru:{flag:'🇷🇺',name:'RU',rtl:false,nav:['Обо мне','Навыки','Образование','Контакт'],badge:'Открыт к возможностям',subtitle:'Студент IT · Арабский открытый университет, Кувейт',location:'📍 Хавалли, Кувейт',btn_contact:'Связаться',scroll:'Прокрутить',about_label:'Обо мне',about_text:"Студент IT, увлечённый технологиями. Владею MS Office и компьютерными приложениями. Свободно говорю по-<strong style='color:#fff;font-weight:500'>арабски</strong> и по-<strong style='color:#fff;font-weight:500'>английски</strong>.",skills_label:'Навыки',skills:['MS Office','Java','ИИ-инструменты','Обработка фото','Поддержка ПК','Английский (свободно)','Арабский (родной)','Решение задач'],edu_label:'Образование',edu_degree:'Бакалавр информационных технологий',edu_school:'Арабский открытый университет (AOU) — Кувейт',edu_year:'Студент · Выпуск в 2030',cert_label:'Сертификаты',cert_name:'Сертификат турецкого C1',cert_desc:'Продвинутый уровень турецкого',contact_label:'Контакты',contact_email:'Написать письмо',contact_loc:'Хавалли, Кувейт',footer:'Разработано <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Написать сообщение',modal_sub:'Заполните форму.',label_name:'Ваше имя',label_email:'Ваш email',label_subject:'Тема',label_message:'Сообщение',btn_send:'Отправить',sending:'Отправка...',success:'Сообщение отправлено!',err_empty:'Заполните все поля.',err_email:'Неверный email.',err_send:'Ошибка. Напишите напрямую.'},
+  pt:{flag:'🇧🇷',name:'PT',rtl:false,nav:['Sobre mim','Habilidades','Educação','Contato'],badge:'Disponível para oportunidades',subtitle:'Estudante de TI · Universidade Árabe Aberta, Kuwait',location:'📍 Hawally, Kuwait',btn_contact:'Entrar em contato',scroll:'Rolar',about_label:'Sobre mim',about_text:"Estudante de TI apaixonado por tecnologia. Domino MS Office. Falo <strong style='color:#fff;font-weight:500'>árabe</strong> e <strong style='color:#fff;font-weight:500'>inglês</strong> fluentemente.",skills_label:'Habilidades',skills:['MS Office','Java','Ferramentas IA','Edição de fotos','Suporte técnico','Inglês (fluente)','Árabe (nativo)','Resolução de problemas'],edu_label:'Educação',edu_degree:'Bacharelado em TI',edu_school:'Universidade Árabe Aberta (AOU) — Kuwait',edu_year:'Matriculado · Formatura 2030',cert_label:'Certificações',cert_name:'Certificado turco C1',cert_desc:'Proficiência avançada em turco',contact_label:'Contato',contact_email:'Enviar e-mail',contact_loc:'Hawally, Kuwait',footer:'Desenvolvido por <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Enviar mensagem',modal_sub:'Preencha seus dados.',label_name:'Seu nome',label_email:'Seu email',label_subject:'Assunto',label_message:'Mensagem',btn_send:'Enviar',sending:'Enviando...',success:'Mensagem enviada!',err_empty:'Preencha todos os campos.',err_email:'Email inválido.',err_send:'Erro. Envie-me um email diretamente.'},
+  it:{flag:'🇮🇹',name:'IT',rtl:false,nav:['Chi sono','Competenze','Formazione','Contatti'],badge:'Disponibile per opportunità',subtitle:'Studente IT · Università Araba Aperta, Kuwait',location:'📍 Hawally, Kuwait',btn_contact:'Contattami',scroll:'Scorri',about_label:'Chi sono',about_text:"Studente IT appassionato di tecnologia. Competente in MS Office. Parlo <strong style='color:#fff;font-weight:500'>arabo</strong> e <strong style='color:#fff;font-weight:500'>inglese</strong> correntemente.",skills_label:'Competenze',skills:['MS Office','Java','Strumenti IA','Editing foto','Supporto PC','Inglese (corrente)','Arabo (madrelingua)','Problem solving'],edu_label:'Formazione',edu_degree:"Laurea in TI",edu_school:'Università Araba Aperta (AOU) — Kuwait',edu_year:'Iscritto · Laurea nel 2030',cert_label:'Certificazioni',cert_name:'Certificato turco C1',cert_desc:'Competenza avanzata in turco',contact_label:'Contatti',contact_email:'Invia email',contact_loc:'Hawally, Kuwait',footer:'Progettato da <strong>Iyad Alkhawalda</strong> · © 2025',modal_title:'Invia un messaggio',modal_sub:'Compila i dati.',label_name:'Il tuo nome',label_email:'La tua email',label_subject:'Oggetto',label_message:'Messaggio',btn_send:'Invia',sending:'Invio...',success:'Messaggio inviato!',err_empty:'Compila tutti i campi.',err_email:'Email non valida.',err_send:'Errore. Inviami una email direttamente.'}
+};
+ 
+let currentT=langs.en;
+ 
+function toggleLang(){
+  document.getElementById('langBtn').classList.toggle('open');
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!document.getElementById('langSwitcher').contains(e.target)){
+    document.getElementById('langBtn').classList.remove('open');
+    document.getElementById('langDropdown').classList.remove('open');
+  }
+});
+ 
+function setLang(code){
+  const t=langs[code]; currentT=t;
+  document.getElementById('langBtn').classList.remove('open');
+  document.getElementById('langDropdown').classList.remove('open');
+  document.getElementById('currentFlag').textContent=t.flag;
+  document.getElementById('currentLangName').textContent=t.name;
+  document.querySelectorAll('.lang-option').forEach((o,i)=>o.classList.toggle('active',Object.keys(langs)[i]===code));
+  document.documentElement.setAttribute('dir',t.rtl?'rtl':'ltr');
+  document.documentElement.setAttribute('lang',code);
+  // hero
+  document.getElementById('t-badge').textContent=t.badge;
+  document.getElementById('t-subtitle').textContent=t.subtitle;
+  document.getElementById('t-location').textContent=t.location;
+  document.getElementById('t-btn-contact').textContent=t.btn_contact;
+  document.getElementById('t-scroll').textContent=t.scroll;
+  // sections
+  document.getElementById('t-about-label').textContent=t.about_label;
+  document.getElementById('t-about-text').innerHTML=t.about_text;
+  document.getElementById('t-skills-label').textContent=t.skills_label;
+  // skills pills
+  document.querySelectorAll('#skillsGrid .skill-pill').forEach((p,i)=>{if(t.skills[i])p.textContent=t.skills[i];});
+  document.getElementById('t-edu-label').textContent=t.edu_label;
+  document.getElementById('t-edu-degree').textContent=t.edu_degree;
+  document.getElementById('t-edu-school').textContent=t.edu_school;
+  document.getElementById('t-edu-year').textContent=t.edu_year;
+  document.getElementById('t-cert-label').textContent=t.cert_label;
+  document.getElementById('t-cert-name').textContent=t.cert_name;
+  document.getElementById('t-cert-desc').textContent=t.cert_desc;
+  document.getElementById('t-contact-label').textContent=t.contact_label;
+  document.getElementById('t-contact-email').textContent=t.contact_email;
+  document.getElementById('t-contact-loc').textContent=t.contact_loc;
+  document.getElementById('t-footer').innerHTML=t.footer;
+  // nav
+  [0,1,2,3].forEach(i=>{const el=document.getElementById('nl'+i);if(el&&t.nav[i])el.textContent=t.nav[i];});
+  // modal
+  document.getElementById('t-modal-title').textContent=t.modal_title;
+  document.getElementById('t-modal-sub').textContent=t.modal_sub;
+  document.getElementById('t-label-name').textContent=t.label_name;
+  document.getElementById('t-label-email').textContent=t.label_email;
+  document.getElementById('t-label-subject').textContent=t.label_subject;
+  document.getElementById('t-label-message').textContent=t.label_message;
+  document.getElementById('t-btn-send').textContent=t.btn_send;
+}
+ 
+// CURSOR
+const glow=document.getElementById('cursorGlow');
+document.addEventListener('mousemove',e=>{glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px';});
+ 
+// STARS
+const canvas=document.getElementById('stars'),ctx=canvas.getContext('2d');let stars=[];
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+function initStars(){stars=[];for(let i=0;i<120;i++)stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2+.3,a:Math.random(),speed:Math.random()*.004+.001});}
+function drawStars(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{s.a+=s.speed;const alpha=(Math.sin(s.a)+1)/2*.7+.1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(79,195,247,${alpha})`;ctx.fill();});requestAnimationFrame(drawStars);}
+resize();initStars();drawStars();
+window.addEventListener('resize',()=>{resize();initStars();});
+ 
+// SCROLL REVEAL
+const secs=document.querySelectorAll('.section');
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.12});
+secs.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
