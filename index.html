@@ -499,6 +499,26 @@ window.addEventListener('resize',()=>{resize();initStars();});
 const secs=document.querySelectorAll('.section');
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.12});
 secs.forEach(s=>obs.observe(s));
+
+
+document.addEventListener('click', (e) => {
+  const langOption = e.target.closest('.lang-option');
+  if (langOption) {
+ 
+    const onclickAttr = langOption.getAttribute('onclick');
+    const langCode = onclickAttr.match(/'([^']+)'/)[1];
+    localStorage.setItem('selectedLang', langCode);
+  }
+});
+
+// تشغيل اللغة المحفوظة عند فتح الموقع
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('selectedLang');
+  if (saved && typeof setLang === 'function') {
+    setLang(saved);
+  }
+});
+
 </script>
 </body>
 </html>
